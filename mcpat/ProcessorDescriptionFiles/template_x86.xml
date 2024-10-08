@@ -7,7 +7,7 @@
     <param name="number_of_L2Directories" value="0"/>
     <param name="number_of_L2s" value="1"/>
     <!-- This number means how many L2 clusters in each cluster there can be multiple banks/ports -->
-    <param name="Private_L2" value="1"/>
+    <param name="Private_L2" value="0"/>
     <!--1 Private, 0 shared/coherent -->
     <param name="number_of_L3s" value="0"/>
     <!-- This number means how many L3 clusters -->
@@ -221,10 +221,10 @@
       <component id="system.core.predictor" name="PBT">
         <!-- branch predictor; tournament predictor see Alpha implementation -->
         <param name="local_predictor_size" value="10,3"/>
-        <param name="local_predictor_entries" value="1024"/>
-        <param name="global_predictor_entries" value="4096"/>
+        <param name="local_predictor_entries" value="config.system.cpu.branchPred.localPredictorSize"/>
+        <param name="global_predictor_entries" value="config.system.cpu.branchPred.globalPredictorSize"/>
         <param name="global_predictor_bits" value="2"/>
-        <param name="chooser_predictor_entries" value="4096"/>
+        <param name="chooser_predictor_entries" value="config.system.cpu.branchPred.choicePredictorSize"/>
         <param name="chooser_predictor_bits" value="2"/>
         <!-- These parameters can be combined like below in next version
         <param name="load_predictor" value="10,3,1024"/>
@@ -272,8 +272,7 @@
       <param name="number_of_BTB" value="2"/>
       <component id="system.core.BTB" name="BTB">
         <!-- all the buffer related are optional -->
-        <param name="BTB_config" value="5120,4,2,1, 1,3"/>
-        <!--should be 4096 + 1024 -->
+        <param name="BTB_config" value="config.system.cpu.branchPred.btb.numEntries,4,2,1, 1,3"/>
         <!-- the parameters are capacity,block_width,associativity,bank, throughput w.r.t. core clock, latency w.r.t. core clock,-->
         <stat name="read_accesses" value="stats.system.cpu.branchPred.BTBLookups"/>
         <!--See IFU code for guideline -->
@@ -325,40 +324,40 @@
       <!-- <stat name="duty_cycle" value="1"/> -->
     <!-- </component> -->
     <!--**********************************************************************-->
-    <component id="system.NoC0" name="noc0">
-      <param name="clockrate" value="3400"/>
-      <param name="vdd" value="0"/>
-      <!-- 0 means using ITRS default vdd -->
-      <param name="power_gating_vcc" value="-1"/>
-      <!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
-      <param name="type" value="0"/>
-      <!--0:bus, 1:NoC , for bus no matter how many nodes sharing the bus
-        at each time only one node can send req -->
-      <param name="horizontal_nodes" value="1"/>
-      <param name="vertical_nodes" value="1"/>
-      <param name="has_global_link" value="0"/>
-      <!-- 1 has global link, 0 does not have global link -->
-      <param name="link_throughput" value="1"/>
-      <!--w.r.t clock -->
-      <param name="link_latency" value="1"/>
-      <!--w.r.t clock -->
-      <!-- throughput >= latency -->
-      <!-- Router architecture -->
-      <param name="input_ports" value="1"/>
-      <param name="output_ports" value="1"/>
-      <!-- For bus the I/O ports should be 1 -->
-      <param name="flit_bits" value="256"/>
-      <param name="chip_coverage" value="1"/>
-      <!-- When multiple NOC present, one NOC will cover part of the whole chip. 
-        chip_coverage <=1 -->
-      <param name="link_routing_over_percentage" value="0.5"/>
-      <!-- Links can route over other components or occupy whole area.
-        by default, 50% of the NoC global links routes over other 
-        components -->
-      <stat name="total_accesses" value="100000"/>
-      <!-- This is the number of total accesses within the whole network not for each router -->
-      <stat name="duty_cycle" value="1"/>
-    </component>
+    <!-- <component id="system.NoC0" name="noc0"> -->
+    <!--   <param name="clockrate" value="3400"/> -->
+    <!--   <param name="vdd" value="0"/> -->
+    <!--   <!-\- 0 means using ITRS default vdd -\-> -->
+    <!--   <param name="power_gating_vcc" value="-1"/> -->
+    <!--   <!-\- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -\-> -->
+    <!--   <param name="type" value="0"/> -->
+    <!--   <!-\-0:bus, 1:NoC , for bus no matter how many nodes sharing the bus -->
+    <!--     at each time only one node can send req -\-> -->
+    <!--   <param name="horizontal_nodes" value="1"/> -->
+    <!--   <param name="vertical_nodes" value="1"/> -->
+    <!--   <param name="has_global_link" value="0"/> -->
+    <!--   <!-\- 1 has global link, 0 does not have global link -\-> -->
+    <!--   <param name="link_throughput" value="1"/> -->
+    <!--   <!-\-w.r.t clock -\-> -->
+    <!--   <param name="link_latency" value="1"/> -->
+    <!--   <!-\-w.r.t clock -\-> -->
+    <!--   <!-\- throughput >= latency -\-> -->
+    <!--   <!-\- Router architecture -\-> -->
+    <!--   <param name="input_ports" value="1"/> -->
+    <!--   <param name="output_ports" value="1"/> -->
+    <!--   <!-\- For bus the I/O ports should be 1 -\-> -->
+    <!--   <param name="flit_bits" value="256"/> -->
+    <!--   <param name="chip_coverage" value="1"/> -->
+    <!--   <!-\- When multiple NOC present, one NOC will cover part of the whole chip.  -->
+    <!--     chip_coverage <=1 -\-> -->
+    <!--   <param name="link_routing_over_percentage" value="0.5"/> -->
+    <!--   <!-\- Links can route over other components or occupy whole area. -->
+    <!--     by default, 50% of the NoC global links routes over other  -->
+    <!--     components -\-> -->
+    <!--   <stat name="total_accesses" value="100000"/> -->
+    <!--   <!-\- This is the number of total accesses within the whole network not for each router -\-> -->
+    <!--   <stat name="duty_cycle" value="1"/> -->
+    <!-- </component> -->
     <!--**********************************************************************-->
     <component id="system.mc" name="mc">
       <!-- Memory controllers are for DDR(2,3...) DIMMs -->
@@ -395,26 +394,26 @@
       Further track down can be easily added in later versions. -->
     </component>
     <!--**********************************************************************-->
-    <component id="system.niu" name="niu">
-      <!-- On chip 10Gb Ethernet NIC, including XAUI Phy and MAC controller  -->
-      <!-- For a minimum IP packet size of 84B at 10Gb/s, a new packet arrives every 67.2ns. 
-         the low bound of clock rate of a 10Gb MAC is 150Mhz -->
-      <param name="type" value="0"/>
-      <!-- 1: low power; 0 high performance -->
-      <param name="clockrate" value="350"/>
-      <param name="vdd" value="0"/>
-      <!-- 0 means using ITRS default vdd -->
-      <param name="power_gating_vcc" value="-1"/>
-      <!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
-      <param name="number_units" value="0"/>
-      <!-- unlike PCIe and memory controllers, each Ethernet controller only have one port -->
-      <stat name="duty_cycle" value="1.0"/>
-      <!-- achievable max load <= 1.0 -->
-      <stat name="total_load_perc" value="0.7"/>
-      <!-- ratio of total achieved load to total achieve-able bandwidth  -->
-      <!-- McPAT does not track individual nic, instead, it takes the total accesses and calculate 
-      the average power per nic or per channel. This is sufficient for most application. -->
-    </component>
+    <!-- <component id="system.niu" name="niu"> -->
+    <!--   <!-\- On chip 10Gb Ethernet NIC, including XAUI Phy and MAC controller  -\-> -->
+    <!--   <!-\- For a minimum IP packet size of 84B at 10Gb/s, a new packet arrives every 67.2ns.  -->
+    <!--      the low bound of clock rate of a 10Gb MAC is 150Mhz -\-> -->
+    <!--   <param name="type" value="0"/> -->
+    <!--   <!-\- 1: low power; 0 high performance -\-> -->
+    <!--   <param name="clockrate" value="350"/> -->
+    <!--   <param name="vdd" value="0"/> -->
+    <!--   <!-\- 0 means using ITRS default vdd -\-> -->
+    <!--   <param name="power_gating_vcc" value="-1"/> -->
+    <!--   <!-\- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -\-> -->
+    <!--   <param name="number_units" value="0"/> -->
+    <!--   <!-\- unlike PCIe and memory controllers, each Ethernet controller only have one port -\-> -->
+    <!--   <stat name="duty_cycle" value="1.0"/> -->
+    <!--   <!-\- achievable max load <= 1.0 -\-> -->
+    <!--   <stat name="total_load_perc" value="0.7"/> -->
+    <!--   <!-\- ratio of total achieved load to total achieve-able bandwidth  -\-> -->
+    <!--   <!-\- McPAT does not track individual nic, instead, it takes the total accesses and calculate  -->
+    <!--   the average power per nic or per channel. This is sufficient for most application. -\-> -->
+    <!-- </component> -->
     <!--**********************************************************************-->
     <component id="system.pcie" name="pcie">
       <!-- On chip PCIe controller, including Phy-->
