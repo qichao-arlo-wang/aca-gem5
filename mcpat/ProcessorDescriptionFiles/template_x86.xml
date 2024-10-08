@@ -324,40 +324,40 @@
       <!-- <stat name="duty_cycle" value="1"/> -->
     <!-- </component> -->
     <!--**********************************************************************-->
-    <!-- <component id="system.NoC0" name="noc0"> -->
-    <!--   <param name="clockrate" value="3400"/> -->
-    <!--   <param name="vdd" value="0"/> -->
-    <!--   <!-\- 0 means using ITRS default vdd -\-> -->
-    <!--   <param name="power_gating_vcc" value="-1"/> -->
-    <!--   <!-\- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -\-> -->
-    <!--   <param name="type" value="0"/> -->
-    <!--   <!-\-0:bus, 1:NoC , for bus no matter how many nodes sharing the bus -->
-    <!--     at each time only one node can send req -\-> -->
-    <!--   <param name="horizontal_nodes" value="1"/> -->
-    <!--   <param name="vertical_nodes" value="1"/> -->
-    <!--   <param name="has_global_link" value="0"/> -->
-    <!--   <!-\- 1 has global link, 0 does not have global link -\-> -->
-    <!--   <param name="link_throughput" value="1"/> -->
-    <!--   <!-\-w.r.t clock -\-> -->
-    <!--   <param name="link_latency" value="1"/> -->
-    <!--   <!-\-w.r.t clock -\-> -->
-    <!--   <!-\- throughput >= latency -\-> -->
-    <!--   <!-\- Router architecture -\-> -->
-    <!--   <param name="input_ports" value="1"/> -->
-    <!--   <param name="output_ports" value="1"/> -->
-    <!--   <!-\- For bus the I/O ports should be 1 -\-> -->
-    <!--   <param name="flit_bits" value="256"/> -->
-    <!--   <param name="chip_coverage" value="1"/> -->
-    <!--   <!-\- When multiple NOC present, one NOC will cover part of the whole chip.  -->
-    <!--     chip_coverage <=1 -\-> -->
-    <!--   <param name="link_routing_over_percentage" value="0.5"/> -->
-    <!--   <!-\- Links can route over other components or occupy whole area. -->
-    <!--     by default, 50% of the NoC global links routes over other  -->
-    <!--     components -\-> -->
-    <!--   <stat name="total_accesses" value="100000"/> -->
-    <!--   <!-\- This is the number of total accesses within the whole network not for each router -\-> -->
-    <!--   <stat name="duty_cycle" value="1"/> -->
-    <!-- </component> -->
+    <component id="system.NoC0" name="noc0">
+      <param name="clockrate" value="3400"/>
+      <param name="vdd" value="0"/>
+      <!-- 0 means using ITRS default vdd -->
+      <param name="power_gating_vcc" value="-1"/>
+      <!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
+      <param name="type" value="0"/>
+      <!--0:bus, 1:NoC , for bus no matter how many nodes sharing the bus
+        at each time only one node can send req -->
+      <param name="horizontal_nodes" value="1"/>
+      <param name="vertical_nodes" value="1"/>
+      <param name="has_global_link" value="0"/>
+      <!-- 1 has global link, 0 does not have global link -->
+      <param name="link_throughput" value="1"/>
+      <!--w.r.t clock -->
+      <param name="link_latency" value="1"/>
+      <!--w.r.t clock -->
+      <!-- throughput >= latency -->
+      <!-- Router architecture -->
+      <param name="input_ports" value="1"/>
+      <param name="output_ports" value="1"/>
+      <!-- For bus the I/O ports should be 1 -->
+      <param name="flit_bits" value="256"/>
+      <param name="chip_coverage" value="1"/>
+      <!-- When multiple NOC present, one NOC will cover part of the whole chip.
+        chip_coverage <=1 -->
+      <param name="link_routing_over_percentage" value="0.5"/>
+      <!-- Links can route over other components or occupy whole area.
+        by default, 50% of the NoC global links routes over other
+        components -->
+      <stat name="total_accesses" value="100000"/>
+      <!-- This is the number of total accesses within the whole network not for each router -->
+      <stat name="duty_cycle" value="1"/>
+    </component>
     <!--**********************************************************************-->
     <component id="system.mc" name="mc">
       <!-- Memory controllers are for DDR(2,3...) DIMMs -->
