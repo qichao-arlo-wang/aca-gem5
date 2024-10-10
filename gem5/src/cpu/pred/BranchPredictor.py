@@ -71,7 +71,7 @@ class ReturnAddrStack(SimObject):
     cxx_header = "cpu/pred/ras.hh"
 
     numThreads = Param.Unsigned(Parent.numThreads, "Number of threads")
-    numEntries = Param.Unsigned(16, "Number of RAS entries")
+    numEntries = Param.Unsigned(8, "Number of RAS entries")
 
 
 class BranchTargetBuffer(ClockedObject):
@@ -88,7 +88,7 @@ class SimpleBTB(BranchTargetBuffer):
     cxx_class = "gem5::branch_prediction::SimpleBTB"
     cxx_header = "cpu/pred/simple_btb.hh"
 
-    numEntries = Param.Unsigned(4096, "Number of BTB entries")
+    numEntries = Param.Unsigned(1024, "Number of BTB entries")
     tagBits = Param.Unsigned(16, "Size of the BTB tags, in bits")
     instShiftAmt = Param.Unsigned(
         Parent.instShiftAmt, "Number of bits to shift instructions by"
@@ -171,12 +171,12 @@ class TournamentBP(BranchPredictor):
     cxx_class = "gem5::branch_prediction::TournamentBP"
     cxx_header = "cpu/pred/tournament.hh"
 
-    localPredictorSize = Param.Unsigned(2048, "Size of local predictor")
+    localPredictorSize = Param.Unsigned(1024, "Size of local predictor")
     localCtrBits = Param.Unsigned(2, "Bits per counter")
-    localHistoryTableSize = Param.Unsigned(2048, "size of local history table")
-    globalPredictorSize = Param.Unsigned(8192, "Size of global predictor")
+    localHistoryTableSize = Param.Unsigned(1024, "size of local history table")
+    globalPredictorSize = Param.Unsigned(4096, "Size of global predictor")
     globalCtrBits = Param.Unsigned(2, "Bits per counter")
-    choicePredictorSize = Param.Unsigned(8192, "Size of choice predictor")
+    choicePredictorSize = Param.Unsigned(4096, "Size of choice predictor")
     choiceCtrBits = Param.Unsigned(2, "Bits of choice counters")
 
 

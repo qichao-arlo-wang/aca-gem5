@@ -87,9 +87,9 @@ class BaseO3CPU(BaseCPU):
     iewToFetchDelay = Param.Cycles(1, "Issue/Execute/Writeback to fetch delay")
     commitToFetchDelay = Param.Cycles(1, "Commit to fetch delay")
     fetchWidth = Param.Unsigned(8, "Fetch width")
-    fetchBufferSize = Param.Unsigned(64, "Fetch buffer size in bytes")
+    fetchBufferSize = Param.Unsigned(32, "Fetch buffer size in bytes")
     fetchQueueSize = Param.Unsigned(
-        32, "Fetch queue size in micro-ops per-thread"
+        64, "Fetch queue size in micro-ops per-thread"
     )
 
     renameToDecodeDelay = Param.Cycles(1, "Rename to decode delay")
@@ -137,8 +137,8 @@ class BaseO3CPU(BaseCPU):
         5, "Time buffer size for forward communication"
     )
 
-    LQEntries = Param.Unsigned(32, "Number of load queue entries")
-    SQEntries = Param.Unsigned(32, "Number of store queue entries")
+    LQEntries = Param.Unsigned(30, "Number of load queue entries")
+    SQEntries = Param.Unsigned(18, "Number of store queue entries")
     LSQDepCheckShift = Param.Unsigned(
         4, "Number of places to shift addr before check"
     )
@@ -148,30 +148,30 @@ class BaseO3CPU(BaseCPU):
         "loads & stores or just stores",
     )
     store_set_clear_period = Param.Unsigned(
-        250000,
+        128*244,
         "Number of load/store insts before the dep predictor "
         "should be invalidated",
     )
-    LFSTSize = Param.Unsigned(1024, "Last fetched store table size")
-    SSITSize = Param.Unsigned(1024, "Store set ID table size")
+    LFSTSize = Param.Unsigned(128, "Last fetched store table size")
+    SSITSize = Param.Unsigned(128, "Store set ID table size")
 
     numRobs = Param.Unsigned(1, "Number of Reorder Buffers")
 
     numPhysIntRegs = Param.Unsigned(
-        256, "Number of physical integer registers"
+        112, "Number of physical integer registers"
     )
     numPhysFloatRegs = Param.Unsigned(
-        256, "Number of physical floating point registers"
+        112, "Number of physical floating point registers"
     )
-    numPhysVecRegs = Param.Unsigned(256, "Number of physical vector registers")
+    numPhysVecRegs = Param.Unsigned(112, "Number of physical vector registers")
     numPhysVecPredRegs = Param.Unsigned(
-        32, "Number of physical predicate registers"
+        64, "Number of physical predicate registers"
     )
-    numPhysMatRegs = Param.Unsigned(2, "Number of physical matrix registers")
+    numPhysMatRegs = Param.Unsigned(8, "Number of physical matrix registers")
     # most ISAs don't use condition-code regs, so default is 0
     numPhysCCRegs = Param.Unsigned(0, "Number of physical cc registers")
-    numIQEntries = Param.Unsigned(64, "Number of instruction queue entries")
-    numROBEntries = Param.Unsigned(192, "Number of reorder buffer entries")
+    numIQEntries = Param.Unsigned(71, "Number of instruction queue entries")
+    numROBEntries = Param.Unsigned(112, "Number of reorder buffer entries")
 
     smtNumFetchingThreads = Param.Unsigned(1, "SMT Number of Fetching Threads")
     smtFetchPolicy = Param.SMTFetchPolicy("RoundRobin", "SMT Fetch policy")
