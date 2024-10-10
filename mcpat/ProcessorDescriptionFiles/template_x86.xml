@@ -242,6 +242,7 @@
         which is actually a replacement -->
       </component>
       <component id="system.core.icache" name="icache">
+        <param name="icache_config" value="config.system.cpu.icache.size,config.system.cpu.icache.tags.block_size,config.system.cpu.icache.assoc,1,1,config.system.cpu.icache.response_latency,config.system.cpu.icache.tags.block_size,0"/>
         <!-- there is no write requests to itlb although writes happen to it after miss, 
         which is actually a replacement -->
         <param name="buffer_sizes" value="config.system.cpu.icache.mshrs,config.system.cpu.icache.mshrs,config.system.cpu.icache.mshrs,config.system.cpu.icache.mshrs"/>
