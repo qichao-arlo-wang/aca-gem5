@@ -16,18 +16,18 @@ parser.add_argument('--name', type=str, help="Name used for results file. If uns
 parser.add_argument('--pipeline-width', type=int, help="Number of instructions in each stage of the pipeline at a time. Default = 8.")
 parser.add_argument('--rob-size', type=int, help="Number of reorder buffer entries. Default = 112.")
 parser.add_argument('--num-int-phys-regs', type=int, help="Number of integer physical registers. Default = 112.")
-parser.add_argument('--num-int-float-regs', type=int, help="Number of float physical registers. Default = 112.")
-parser.add_argument('--num-int-vec-regs', type=int, help="Number of vector physical registers. Default = 112.")
+parser.add_argument('--num-float-phys-regs', type=int, help="Number of float physical registers. Default = 112.")
+parser.add_argument('--num-vec-phys-regs', type=int, help="Number of vector physical registers. Default = 112.")
 parser.add_argument('--iq-size', type=int, help="Number of instruction queue entries. Default = 71.")
 parser.add_argument('--lq-size', type=int, help="Number of load queue entries. Default = 30.")
 parser.add_argument('--sq-size', type=int, help="Number of store queue entries. Default = 18.")
 parser.add_argument('--lsq-size', type=int, help="Set load and store queue entries together.")
-parser.add_argument('--window-size', type=str, help="Sets the size of the whole instruction window. Pass comma separated list of numbers to specify ROB, number of int regs, float regs, vec regs, IQ and LSQ respectively.")
+parser.add_argument('--window-size', type=str, help="Sets the size of the whole instruction window. Pass comma separated list of numbers to specify ROB, number of int regs, float regs, vec regs, IQ, LQ and SQ respectively.")
 parser.add_argument('--local-pred-size', type=int, help="Number of local branch predictor entries. Default = 1024.")
 parser.add_argument('--global-pred-size', type=int, help="Number of global branch predictor entries. Default = 4096.")
 parser.add_argument('--btb-size', type=int, help="Number of branch target buffer entries (for branch predictor). Default = 1024.")
 parser.add_argument('--ras-size', type=int, help="Number of return address stack entries (for branch predictor). Default = 16.")
-parser.add_argument('--branch-pred-size', type=int, help="Sets the size of the whole branch predictor. Pass comma separated list of numbers to specify local predictor size, global predictor size, branch target buffer and return address stack respectively.")
+parser.add_argument('--branch-pred-size', type=str, help="Sets the size of the whole branch predictor. Pass comma separated list of numbers to specify local predictor size, global predictor size, branch target buffer and return address stack respectively.")
 parser.add_argument('--l1-data-size', type=int, help="Size in KB of L1 data cache. Default = 128.")
 parser.add_argument('--l1-inst-size', type=int, help="Size in KB of L1 instruction cache. Default = 128.")
 parser.add_argument('--l2-size', type=int, help="Size in MB of L2 cache. Default = 4.")
@@ -51,7 +51,10 @@ if args.window_size:
             parser.print_usage()
             print("simulate.py: error: argument --window-size: invalid int value: "+v)
             exit(1)
-    components = ["numROBEntries", "numPhysIntRegs", "numPhysFloatRegs", "numPhysVecRegs", "numIQEntries", "numLQEntries", "numSQEntries"]
+    components = ["numROBEntries", "numPhysIntRegs", "numPhysFloatRegs", "numPhysVecRegs", "numIQEntries", "LQEntries", "SQEntries"]
+    if len(values) >= 2 and int(values[1]) < 49:
+        print("Minimum number of physical integer registers must be at least 49!")
+        exit(1)
     for component, size in zip(components,values):
         configs.append(prefix+component+"="+size+"\" ")
 
@@ -63,32 +66,50 @@ if args.branch_pred_size:
             print("simulate.py: error: argument --branch-pred-size: invalid int value: "+v)
             exit(1)
     components = ["localPredictorSize", "globalPredictorSize", "btb.numEntries", "ras.numEntries"]
+    if len(values) == len(components) and int(values[-1]) < 16:
+        print("Minimum return address stack entries must be at least 16!")
+        exit(1)
     for component, size in zip(components,values):
         configs.append(branch_prefix+component+"="+size+"\" ")
     #hacking this in so students have less to worry about
     configs.append(branch_prefix+"localHistoryTableSize="+values[0]+"\" ")
 
 if args.rob_size: configs.append(prefix+"numROBEntries="+str(args.rob_size)+"\" ")
+if args.num_int_phys_regs: 
+    if args.num_int_phys_regs < 49:
+        print("Minimum number of physical integer registers must be at least 49!")
+        exit(1)
+    configs.append(prefix+"numPhysIntRegs="+str(args.num_int_phys_regs)+"\" ")
+if args.num_float_phys_regs: configs.append(prefix+"numPhysFloatRegs="+str(args.num_int_phys_regs)+"\" ")
+if args.num_vec_phys_regs: configs.append(prefix+"numPhysVecRegs="+str(args.num_int_phys_regs)+"\" ")
 if args.iq_size: configs.append(prefix+"numIQEntries="+str(args.iq_size)+"\" ")
-if args.lsq_size and (args.lq_size or args.sq_size):
-    print("Error: LSQ and LQ and/or SQ set at once. Either set them indivisually or both together thorugh lsq-size.")
-    exit(1)
-elif args.lsq_size:
-    configs.append(prefix+"numLQEntries="+str(args.lq_size)+"\" ")
-    configs.append(prefix+"numSQEntries="+str(args.sq_size)+"\" ")
-if args.lq_size: configs.append(prefix+"numLQEntries="+str(args.lq_size)+"\" ")
-if args.sq_size: configs.append(prefix+"numSQEntries="+str(args.sq_size)+"\" ")
+if args.lsq_size:
+    configs.append(prefix+"LQEntries="+str(args.lq_size)+"\" ")
+    configs.append(prefix+"SQEntries="+str(args.sq_size)+"\" ")
+if args.lq_size: configs.append(prefix+"LQEntries="+str(args.lq_size)+"\" ")
+if args.sq_size: configs.append(prefix+"SQEntries="+str(args.sq_size)+"\" ")
 if args.local_pred_size:
     configs.append(branch_prefix+"localPredictorSize="+str(args.local_pred_size)+"\" ")
     configs.append(branch_prefix+"localHistoryTableSize="+str(args.local_pred_size)+"\" ")
 if args.global_pred_size:
     configs.append(branch_prefix+"globalPredictorSize="+str(args.global_pred_size)+"\" ")
-    configs.append(branch_prefix+"choicePredictorSize="+str(args.global_pred_size)+"\" ")
 if args.btb_size: configs.append(branch_prefix+"btb.numEntries="+str(args.btb_size)+"\" ")
-if args.ras_size: configs.append(branch_prefix+"ras.numEntries="+str(args.ras_size)+"\" ")
-if args.l1_data_size: configs.append("--l1d_size="+str(args.l1_data_size)+"KiB ")
+if args.ras_size: 
+    if args.ras_size < 16:
+        print("Minimum return address stack entries must be at least 16!")
+        exit(1)
+    configs.append(branch_prefix+"ras.numEntries="+str(args.ras_size)+"\" ")
+if args.l1_data_size: 
+    if args.l1_data_size < 2:
+        print("Minimum l1 cache sizes must be at least 2KiB!")
+        exit(1)
+    configs.append("--l1d_size="+str(args.l1_data_size)+"KiB ")
 else: configs.append("--l1d_size=128KiB ")
-if args.l1_inst_size: configs.append("--l1i_size="+str(args.l1_inst_size)+"KiB ")
+if args.l1_inst_size: 
+    if args.l1_inst_size < 2:
+        print("Minimum l1 cache sizes must be at least 2KiB!")
+        exit(1)
+    configs.append("--l1i_size="+str(args.l1_inst_size)+"KiB ")
 else: configs.append("--l1i_size=128KiB ")
 if args.l2_size: configs.append("--l2_size="+str(args.l2_size)+"MB ")
 else: configs.append("--l2_size=4MB ")
