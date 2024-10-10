@@ -86,7 +86,11 @@ class BaseO3CPU(BaseCPU):
     renameToFetchDelay = Param.Cycles(1, "Rename to fetch delay")
     iewToFetchDelay = Param.Cycles(1, "Issue/Execute/Writeback to fetch delay")
     commitToFetchDelay = Param.Cycles(1, "Commit to fetch delay")
+<<<<<<< HEAD
     fetchWidth = Param.Unsigned(4, "Fetch width")
+=======
+    fetchWidth = Param.Unsigned(8, "Fetch width")
+>>>>>>> refs/remotes/origin/main
     fetchBufferSize = Param.Unsigned(32, "Fetch buffer size in bytes")
     fetchQueueSize = Param.Unsigned(
         64, "Fetch queue size in micro-ops per-thread"
@@ -148,12 +152,12 @@ class BaseO3CPU(BaseCPU):
         "loads & stores or just stores",
     )
     store_set_clear_period = Param.Unsigned(
-        32*244,
+        128*244,
         "Number of load/store insts before the dep predictor "
         "should be invalidated",
     )
-    LFSTSize = Param.Unsigned(32, "Last fetched store table size")
-    SSITSize = Param.Unsigned(32, "Store set ID table size")
+    LFSTSize = Param.Unsigned(128, "Last fetched store table size")
+    SSITSize = Param.Unsigned(128, "Store set ID table size")
 
     numRobs = Param.Unsigned(1, "Number of Reorder Buffers")
 
@@ -165,7 +169,7 @@ class BaseO3CPU(BaseCPU):
     )
     numPhysVecRegs = Param.Unsigned(112, "Number of physical vector registers")
     numPhysVecPredRegs = Param.Unsigned(
-        32, "Number of physical predicate registers"
+        64, "Number of physical predicate registers"
     )
     numPhysMatRegs = Param.Unsigned(8, "Number of physical matrix registers")
     # most ISAs don't use condition-code regs, so default is 0
