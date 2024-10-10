@@ -44,7 +44,6 @@ if args.pipeline_width:
     for stage in stages:
         configs.append(prefix+stage+"Width="+str(args.pipeline_width)+"\" ")
 
-<<<<<<< HEAD
 if args.window_size:
     values = args.window_size.split(",")
     for v in values:
@@ -95,20 +94,18 @@ if args.l2_size: configs.append("--l2_size="+str(args.l2_size)+"MB ")
 else: configs.append("--l2_size=4MB ")
 
 gem5_outdir = name+".out"
-gem5_run = gem5+"build/X86/gem5.fast --outdir="+gem5_outdir+" "+gem5+"configs/deprecated/examples/se.py --cpu-type=DerivO3CPU --caches --l2cache -c "+benchmark+" --options=\""+benchmark_args+"\" "
+gem5_run = gem5+"build/X86/gem5.fast --outdir="+gem5_outdir+" "+gem5+"configs/deprecated/example/se.py --cpu-type=DerivO3CPU --caches --l2cache -c "+benchmark+" --options=\""+benchmark_args+"\" "
 gem5_run += ' '.join(configs)
 subprocess.run(gem5_run, shell=True, check=True)
 
 gem5tomcpat_run = "python "+gem5tomcpat+" --config "+gem5_outdir+"/config.json --stats "+gem5_outdir+"/stats.txt --template "+mcpat+"/ProcessorDescriptionFiles/template_x86.xml --output "+name+".xml"
 subprocess.run(gem5tomcpat_run, shell=True, check=True, capture_output=True)
 
-mcpat_run = mcpat+" -infile "+name+".xml -print_level 1 -opt_for_clk 0"
+mcpat_run = mcpat+"mcpat -infile "+name+".xml -print_level 1 -opt_for_clk 0"
 mcpat_output = subprocess.run(mcpat_run, shell=True, check=True, capture_output=True, text=True).stdout
-power_output = mcpat_output.split("\n")[19:26]
-del power_output[1]
-power_output[0] = "Core"
+power_output = mcpat_output.split("\n")[21:26]
 power_output = '\n'.join(power_output)
-with open(name+".out", "r") as gem5_output:
+with open(name+".out/stats.txt", "r") as gem5_output:
     for line in gem5_output:
         if 'system.cpu.cpi' in line:
             match = re.search(r'\d+.\d+', line)
@@ -116,12 +113,17 @@ with open(name+".out", "r") as gem5_output:
                 print("Error grepping gem5 output")
                 exit(1)
             cpi = match.group(0)
-            print("Cycles per instruction: "+cpi)
-            with open("power_usage."+name, "w") as f:
-                f.write("Cycles per instruction: "+cpi+"\n")
+            print()
+            print("Cycles per instruction:")
+            print("    "+cpi)
+            with open("results."+name, "w") as f:
+                f.write("Cycles per instruction:\n")
+                f.write("    "+cpi+"\n")
+                f.write("Core power usage:\n")
                 f.write(power_output)
+                f.write("\n")
             f.close()
 
 print("Core power usage:")
 print(power_output)
-print("Results have been written to: power_usage."+name)
+print("Results have been written to: results."+name)
