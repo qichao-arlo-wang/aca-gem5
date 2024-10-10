@@ -42,8 +42,9 @@ configs = []
 if args.pipeline_width:
     stages = ["fetch", "decode", "rename", "dispatch", "issue", "wb", "squash", "commit"]
     for stage in stages:
-        configs.append(prefix+stage+"Width="+args.pipeline_width+"\" ")
+        configs.append(prefix+stage+"Width="+str(args.pipeline_width)+"\" ")
 
+<<<<<<< HEAD
 if args.window_size:
     values = args.window_size.split(",")
     for v in values:
@@ -69,31 +70,36 @@ if args.branch_pred_size:
     configs.append(branch_prefix+"localHistoryTableSize="+values[0]+"\" ")
 
 if args.rob_size: configs.append(prefix+"numROBEntries="+str(args.rob_size)+"\" ")
-if args.iq_size: configs.append(prefix+"numIQEntries="+args.iq_size+"\" ")
-if args.lsq_size:
-    configs.append(prefix+"numLQEntries="+args.lq_size+"\" ")
-    configs.append(prefix+"numSQEntries="+args.sq_size+"\" ")
-if args.lq_size: configs.append(prefix+"numLQEntries="+args.lq_size+"\" ")
-if args.sq_size: configs.append(prefix+"numSQEntries="+args.sq_size+"\" ")
+if args.iq_size: configs.append(prefix+"numIQEntries="+str(args.iq_size)+"\" ")
+if args.lsq_size and (args.lq_size or args.sq_size):
+    print("Error: LSQ and LQ and/or SQ set at once. Either set them indivisually or both together thorugh lsq-size.")
+    exit(1)
+elif args.lsq_size:
+    configs.append(prefix+"numLQEntries="+str(args.lq_size)+"\" ")
+    configs.append(prefix+"numSQEntries="+str(args.sq_size)+"\" ")
+if args.lq_size: configs.append(prefix+"numLQEntries="+str(args.lq_size)+"\" ")
+if args.sq_size: configs.append(prefix+"numSQEntries="+str(args.sq_size)+"\" ")
 if args.local_pred_size:
-    configs.append(branch_prefix+"localPredictorSize="+args.local_pred_size+"\" ")
-    configs.append(branch_prefix+"localHistoryTableSize="+args.local_pred_size+"\" ")
-if args.global_pred_size: configs.append(branch_prefix+"globalPredictorSize="+args.global_pred_size+"\" ")
-if args.btb_size: configs.append(branch_prefix+"btb.numEntries="+args.btb_size+"\" ")
-if args.ras_size: configs.append(branch_prefix+"ras.numEntries="+args.ras_size+"\" ")
-if args.l1_data_size: configs.append("--l1d_size="+args.l1_data_size+"KiB ")
+    configs.append(branch_prefix+"localPredictorSize="+str(args.local_pred_size)+"\" ")
+    configs.append(branch_prefix+"localHistoryTableSize="+str(args.local_pred_size)+"\" ")
+if args.global_pred_size:
+    configs.append(branch_prefix+"globalPredictorSize="+str(args.global_pred_size)+"\" ")
+    configs.append(branch_prefix+"choicePredictorSize="+str(args.global_pred_size)+"\" ")
+if args.btb_size: configs.append(branch_prefix+"btb.numEntries="+str(args.btb_size)+"\" ")
+if args.ras_size: configs.append(branch_prefix+"ras.numEntries="+str(args.ras_size)+"\" ")
+if args.l1_data_size: configs.append("--l1d_size="+str(args.l1_data_size)+"KiB ")
 else: configs.append("--l1d_size=128KiB ")
-if args.l1_inst_size: configs.append("--l1i_size="+args.l1_inst_size+"KiB ")
+if args.l1_inst_size: configs.append("--l1i_size="+str(args.l1_inst_size)+"KiB ")
 else: configs.append("--l1i_size=128KiB ")
-if args.l2_size: configs.append("--l2_size="+args.l2_size+"MB ")
+if args.l2_size: configs.append("--l2_size="+str(args.l2_size)+"MB ")
 else: configs.append("--l2_size=4MB ")
 
 gem5_outdir = name+".out"
-gem5_run = gem5+"build/X86/gem5.fast --outdir="+gem5_outdir+" configs/deprecated/examples/se.py --cpu-type=DerivO3CPU --caches --l2cache -c "+benchmark+" --options=\""+benchmark_args+"\" "
+gem5_run = gem5+"build/X86/gem5.fast --outdir="+gem5_outdir+" "+gem5+"configs/deprecated/examples/se.py --cpu-type=DerivO3CPU --caches --l2cache -c "+benchmark+" --options=\""+benchmark_args+"\" "
 gem5_run += ' '.join(configs)
 subprocess.run(gem5_run, shell=True, check=True)
 
-gem5tomcpat_run = "python "+gem5tomcpat+" --config "+gem5_outdir+"/config.json --stats "+gem5_outdir+"/stats --template "+mcpat+"/ProcessorDescriptionFiles/template_x86.xml --output "+name+".xml"
+gem5tomcpat_run = "python "+gem5tomcpat+" --config "+gem5_outdir+"/config.json --stats "+gem5_outdir+"/stats.txt --template "+mcpat+"/ProcessorDescriptionFiles/template_x86.xml --output "+name+".xml"
 subprocess.run(gem5tomcpat_run, shell=True, check=True, capture_output=True)
 
 mcpat_run = mcpat+" -infile "+name+".xml -print_level 1 -opt_for_clk 0"
@@ -102,7 +108,6 @@ power_output = mcpat_output.split("\n")[19:26]
 del power_output[1]
 power_output[0] = "Core"
 power_output = '\n'.join(power_output)
-
 with open(name+".out", "r") as gem5_output:
     for line in gem5_output:
         if 'system.cpu.cpi' in line:
