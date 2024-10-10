@@ -176,7 +176,7 @@ class TournamentBP(BranchPredictor):
     localHistoryTableSize = Param.Unsigned(1024, "size of local history table")
     globalPredictorSize = Param.Unsigned(4096, "Size of global predictor")
     globalCtrBits = Param.Unsigned(2, "Bits per counter")
-    choicePredictorSize = Param.Unsigned(4096, "Size of choice predictor")
+    choicePredictorSize = Param.Unsigned(8192, "Size of choice predictor")
     choiceCtrBits = Param.Unsigned(2, "Bits of choice counters")
 
 
