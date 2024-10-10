@@ -566,7 +566,9 @@ int main(int argc, char *argv[]) {
     if (file_len < strlen(".lisp")) continue;
     if (strcmp(pDirent->d_name + file_len - strlen(".lisp"), ".lisp") != 0) continue;
     in = freopen(strcat(lisp_input,pDirent->d_name), "r", in);
-    printf("%s\n", lisp_input);
+    char *file_name = strrchr(lisp_input, '/');
+    file_name++;
+    printf("%s: ", file_name);
     default_input_port = newport(in), default_output_port = newport(stdout);
     lookahead(default_input_port);
     print_obj(default_output_port, eval(gettokenobj(default_input_port), env) );

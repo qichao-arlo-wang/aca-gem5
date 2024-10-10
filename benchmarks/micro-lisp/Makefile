@@ -1,7 +1,7 @@
 .PHONY: clean stats test
 
 CC ?= gcc
-CFLAGS += -Wall -pedantic -O3 -flto -static -mno-avx 
+CFLAGS += -Wall -pedantic -O3 -flto -static 
 
 all: clean mlisp89 stats test
 
