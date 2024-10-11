@@ -27,3 +27,11 @@ Test micro-lisp:
 `./mlisp89 examples/`
 
 The argument specifies the directory containing the input lisp programs. You can add and remove these programs in this directory (or create a new directory) to change the simulation behaviour and runtime. 
+
+Run a simulation:
+
+```
+python simulate.py
+```
+
+Use `--help` to see available configuration options.
