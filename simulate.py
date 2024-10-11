@@ -22,7 +22,7 @@ parser.add_argument('--iq-size', type=int, help="Number of instruction queue ent
 parser.add_argument('--lq-size', type=int, help="Number of load queue entries. Default = 30.")
 parser.add_argument('--sq-size', type=int, help="Number of store queue entries. Default = 18.")
 parser.add_argument('--lsq-size', type=int, help="Set load and store queue entries together.")
-parser.add_argument('--window-size', type=str, help="Sets the size of the whole instruction window. Pass comma separated list of numbers to specify ROB, number of int regs, float regs, vec regs, IQ, LQ and SQ respectively.")
+parser.add_argument('--window-size', type=str, help="Sets the size of the whole instruction window. Pass comma separated list of numbers to specify ROB, IQ and LSQ respectively. Number of physical regs is set to match ROB size.")
 parser.add_argument('--local-pred-size', type=int, help="Number of local branch predictor entries. Default = 1024.")
 parser.add_argument('--global-pred-size', type=int, help="Number of global branch predictor entries. Default = 4096.")
 parser.add_argument('--btb-size', type=int, help="Number of branch target buffer entries (for branch predictor). Default = 1024.")
@@ -51,13 +51,19 @@ if args.window_size:
             parser.print_usage()
             print("simulate.py: error: argument --window-size: invalid int value: "+v)
             exit(1)
-    components = ["numROBEntries", "numPhysIntRegs", "numPhysFloatRegs", "numPhysVecRegs", "numIQEntries", "LQEntries", "SQEntries"]
-    if len(values) >= 2 and int(values[1]) < 49:
-        print("Minimum number of physical integer registers must be at least 49!")
+    components = ["numROBEntries", "numIQEntries", "LQEntries"]
+    if len(values) != len(components): 
+        print("Please provide "+len(components)+" values for --window-size")
         exit(1)
     for component, size in zip(components,values):
         configs.append(prefix+component+"="+size+"\" ")
+    configs.append(prefix+"SQEntries"+"="+values[-1]+"\" ")
+    num_regs = values[0] if int(values[0]) >= 49 else 49
+    regs = ["numPhysIntRegs", "numPhysFloatRegs", "numPhysVecRegs"]
+    for reg in regs:
+        configs.append(prefix+reg+"="+num_regs+"\" ")
 
+#TODO: add checks for values that need to be powers of 2
 if args.branch_pred_size:
     values = args.branch_pred_size.split(",")
     for v in values:
@@ -66,7 +72,10 @@ if args.branch_pred_size:
             print("simulate.py: error: argument --branch-pred-size: invalid int value: "+v)
             exit(1)
     components = ["localPredictorSize", "globalPredictorSize", "btb.numEntries", "ras.numEntries"]
-    if len(values) == len(components) and int(values[-1]) < 16:
+    if len(values) != len(components):
+        print("Please provide "+len(components)+" values for --branch-pred-size")
+        exit(1)
+    if int(values[-1]) < 16:
         print("Minimum return address stack entries must be at least 16!")
         exit(1)
     for component, size in zip(components,values):
