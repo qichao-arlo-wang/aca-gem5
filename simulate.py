@@ -67,7 +67,6 @@ if args.window_size:
     for reg in regs:
         configs.append(prefix+reg+"="+str(num_regs)+"\" ")
 
-#TODO: add checks for values that need to be powers of 2
 if args.branch_pred_size:
     values = args.branch_pred_size.split(",")
     for v in values:
@@ -77,12 +76,16 @@ if args.branch_pred_size:
             exit(1)
     components = ["localPredictorSize", "globalPredictorSize", "btb.numEntries", "ras.numEntries"]
     if len(values) != len(components):
-        print("Please provide "+len(components)+" values for --branch-pred-size")
+        print("Please provide "+str(len(components))+" values for --branch-pred-size as follows:")
+        print("Local predictor size, global predictor size, branch target buffer size, return address stack size")
         exit(1)
     if int(values[-1]) < 16:
         print("Minimum return address stack entries must be at least 16!")
         exit(1)
     for component, size in zip(components,values):
+        if int(size) & (int(size)-1):
+            print("Branch predictor sizes must be powers of 2!")
+            exit(1)
         configs.append(branch_prefix+component+"="+size+"\" ")
     #hacking this in so students have less to worry about
     configs.append(branch_prefix+"localHistoryTableSize="+values[0]+"\" ")
@@ -107,14 +110,27 @@ if args.lsq_size:
 if args.lq_size: configs.append(prefix+"LQEntries="+str(args.lq_size)+"\" ")
 if args.sq_size: configs.append(prefix+"SQEntries="+str(args.sq_size)+"\" ")
 if args.local_pred_size:
+    if args.local_pred_size & (args.local_pred_size-1):
+        print("Branch predictor sizes must be powers of 2!")
+        exit(1)
     configs.append(branch_prefix+"localPredictorSize="+str(args.local_pred_size)+"\" ")
     configs.append(branch_prefix+"localHistoryTableSize="+str(args.local_pred_size)+"\" ")
 if args.global_pred_size:
+    if args.global_pred_size & (args.global_pred_size-1):
+        print("Branch predictor sizes must be powers of 2!")
+        exit(1)
     configs.append(branch_prefix+"globalPredictorSize="+str(args.global_pred_size)+"\" ")
-if args.btb_size: configs.append(branch_prefix+"btb.numEntries="+str(args.btb_size)+"\" ")
+if args.btb_size: 
+    if args.btb_size & (args.btb_size-1):
+        print("Branch predictor sizes must be powers of 2!")
+        exit(1)
+    configs.append(branch_prefix+"btb.numEntries="+str(args.btb_size)+"\" ")
 if args.ras_size: 
     if args.ras_size < 16:
         print("Minimum return address stack entries must be at least 16!")
+        exit(1)
+    if args.ras_size & (args.ras_size-1):
+        print("Branch predictor sizes must be powers of 2!")
         exit(1)
     configs.append(branch_prefix+"ras.numEntries="+str(args.ras_size)+"\" ")
 if args.l1_data_size: 
