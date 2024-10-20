@@ -79,12 +79,15 @@ if args.branch_pred_size:
         print("Please provide "+str(len(components))+" values for --branch-pred-size as follows:")
         print("Local predictor size, global predictor size, branch target buffer size, return address stack size")
         exit(1)
-    if int(values[-1]) < 16:
-        print("Minimum return address stack entries must be at least 16!")
-        exit(1)
     for component, size in zip(components,values):
         if int(size) & (int(size)-1):
             print("Branch predictor sizes must be powers of 2!")
+            exit(1)
+        if component == components[-1] and int(values[-1]) < 16:
+            print("Minimum return address stack entries must be at least 16!")
+            exit(1)
+        if component == components[-2] and int(values[-2]) < 128:
+            print("Minimum branch target buffer entries must be at least 128!")
             exit(1)
         configs.append(branch_prefix+component+"="+size+"\" ")
     #hacking this in so students have less to worry about
@@ -123,6 +126,9 @@ if args.global_pred_size:
 if args.btb_size: 
     if args.btb_size & (args.btb_size-1):
         print("Branch predictor sizes must be powers of 2!")
+        exit(1)
+    if args.btb_size < 128:
+        print("Minimum branch target buffer entries must be at least 128!")
         exit(1)
     configs.append(branch_prefix+"btb.numEntries="+str(args.btb_size)+"\" ")
 if args.ras_size: 
