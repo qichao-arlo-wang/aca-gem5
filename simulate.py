@@ -102,8 +102,8 @@ if args.num_float_phys_regs: configs.append(prefix+"numPhysFloatRegs="+str(args.
 if args.num_vec_phys_regs: configs.append(prefix+"numPhysVecRegs="+str(args.num_int_phys_regs)+"\" ")
 if args.iq_size: configs.append(prefix+"numIQEntries="+str(args.iq_size)+"\" ")
 if args.lsq_size:
-    configs.append(prefix+"LQEntries="+str(args.lq_size)+"\" ")
-    configs.append(prefix+"SQEntries="+str(args.sq_size)+"\" ")
+    configs.append(prefix+"LQEntries="+str(args.lsq_size)+"\" ")
+    configs.append(prefix+"SQEntries="+str(args.lsq_size)+"\" ")
 if args.lq_size: configs.append(prefix+"LQEntries="+str(args.lq_size)+"\" ")
 if args.sq_size: configs.append(prefix+"SQEntries="+str(args.sq_size)+"\" ")
 if args.local_pred_size:
@@ -175,14 +175,14 @@ with open(name+"/gem5.out/stats.txt", "r") as gem5_output:
                 print("Error grepping gem5 output")
                 exit(1)
             simseconds = match.group(0)
-            print("Simulation time:")
-            print("    "+simseconds+"s")
+            print("Simulation time (seconds):")
+            print("    "+simseconds)
     if not cpi or not simseconds:
         print("Error grepping gem5 output")
         exit(1)
     with open(name+"/results", "w") as f:
-        f.write("Simulation time\n")
-        f.write("    "+simseconds+"s\n")
+        f.write("Simulation time (seconds)\n")
+        f.write("    "+simseconds+"\n")
         f.write("Cycles per instruction:\n")
         f.write("    "+cpi+"\n")
         f.write("Core power usage:\n")
