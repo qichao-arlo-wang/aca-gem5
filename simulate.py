@@ -53,15 +53,19 @@ if args.window_size:
             exit(1)
     components = ["numROBEntries", "numIQEntries", "LQEntries"]
     if len(values) != len(components): 
-        print("Please provide "+len(components)+" values for --window-size")
+        print("Please provide "+str(len(components))+" values for --window-size as follows:")
+        print("Number of ROB entries, number of IQ entries, number of LSQ entries")
         exit(1)
     for component, size in zip(components,values):
+        if component == components[0] and int(size) < 16:
+            print("Mininum ROB size must be at least 16!")
+            exit(1)
         configs.append(prefix+component+"="+size+"\" ")
     configs.append(prefix+"SQEntries"+"="+values[-1]+"\" ")
     num_regs = values[0] if int(values[0]) >= 49 else 49
     regs = ["numPhysIntRegs", "numPhysFloatRegs", "numPhysVecRegs"]
     for reg in regs:
-        configs.append(prefix+reg+"="+num_regs+"\" ")
+        configs.append(prefix+reg+"="+str(num_regs)+"\" ")
 
 #TODO: add checks for values that need to be powers of 2
 if args.branch_pred_size:
@@ -83,10 +87,15 @@ if args.branch_pred_size:
     #hacking this in so students have less to worry about
     configs.append(branch_prefix+"localHistoryTableSize="+values[0]+"\" ")
 
-if args.rob_size: configs.append(prefix+"numROBEntries="+str(args.rob_size)+"\" ")
+if args.rob_size: 
+    if args.rob_size < 16:
+        print("Mininum ROB size must be at least 16!")
+        exit(1)
+    configs.append(prefix+"numROBEntries="+str(args.rob_size)+"\" ")
+
 if args.num_int_phys_regs: 
     if args.num_int_phys_regs < 49:
-        print("Minimum number of physical integer registers must be at least 49!")
+        print("Mininum number of physical integer registers must be at least 49!")
         exit(1)
     configs.append(prefix+"numPhysIntRegs="+str(args.num_int_phys_regs)+"\" ")
 if args.num_float_phys_regs: configs.append(prefix+"numPhysFloatRegs="+str(args.num_int_phys_regs)+"\" ")
@@ -112,30 +121,45 @@ if args.l1_data_size:
     if args.l1_data_size < 2:
         print("Minimum l1 cache sizes must be at least 2KiB!")
         exit(1)
+    if args.l1_data_size & (args.l1_data_size-1):
+        print("Cache sizes must be powers of 2!")
+        exit(1)
     configs.append("--l1d_size="+str(args.l1_data_size)+"KiB ")
 else: configs.append("--l1d_size=128KiB ")
 if args.l1_inst_size: 
     if args.l1_inst_size < 2:
         print("Minimum l1 cache sizes must be at least 2KiB!")
         exit(1)
+    if args.l1_inst_size & (args.l1_inst_size-1):
+        print("Cache sizes must be powers of 2!")
+        exit(1)
     configs.append("--l1i_size="+str(args.l1_inst_size)+"KiB ")
 else: configs.append("--l1i_size=128KiB ")
-if args.l2_size: configs.append("--l2_size="+str(args.l2_size)+"MB ")
+if args.l2_size: 
+    if args.l2_size & (args.l2_size-1):
+        print("Cache sizes must be powers of 2!")
+        exit(1)
+    configs.append("--l2_size="+str(args.l2_size)+"MB ")
 else: configs.append("--l2_size=4MB ")
 
-gem5_outdir = name+".out"
+subprocess.run("mkdir "+name, shell=True)
+
+gem5_outdir = name+"/gem5.out"
 gem5_run = gem5+"build/X86/gem5.fast --outdir="+gem5_outdir+" "+gem5+"configs/deprecated/example/se.py --cpu-type=DerivO3CPU --caches --l2cache -c "+benchmark+" --options=\""+benchmark_args+"\" "
 gem5_run += ' '.join(configs)
 subprocess.run(gem5_run, shell=True, check=True)
 
-gem5tomcpat_run = "python "+gem5tomcpat+" --config "+gem5_outdir+"/config.json --stats "+gem5_outdir+"/stats.txt --template "+mcpat+"/ProcessorDescriptionFiles/template_x86.xml --output "+name+".xml"
+gem5tomcpat_run = "python "+gem5tomcpat+" --config "+gem5_outdir+"/config.json --stats "+gem5_outdir+"/stats.txt --template "+mcpat+"/ProcessorDescriptionFiles/template_x86.xml --output "+name+"/mcpat-in.xml"
 subprocess.run(gem5tomcpat_run, shell=True, check=True, capture_output=True)
 
-mcpat_run = mcpat+"mcpat -infile "+name+".xml -print_level 1 -opt_for_clk 0"
+mcpat_run = mcpat+"mcpat -infile "+name+"/mcpat-in.xml -print_level 1 -opt_for_clk 1"
 mcpat_output = subprocess.run(mcpat_run, shell=True, check=True, capture_output=True, text=True).stdout
 power_output = mcpat_output.split("\n")[21:26]
 power_output = '\n'.join(power_output)
-with open(name+".out/stats.txt", "r") as gem5_output:
+with open(name+"/gem5.out/stats.txt", "r") as gem5_output:
+    cpi = None
+    simseconds = None
+    print()
     for line in gem5_output:
         if 'system.cpu.cpi' in line:
             match = re.search(r'\d+.\d+', line)
@@ -143,17 +167,30 @@ with open(name+".out/stats.txt", "r") as gem5_output:
                 print("Error grepping gem5 output")
                 exit(1)
             cpi = match.group(0)
-            print()
             print("Cycles per instruction:")
             print("    "+cpi)
-            with open("results."+name, "w") as f:
-                f.write("Cycles per instruction:\n")
-                f.write("    "+cpi+"\n")
-                f.write("Core power usage:\n")
-                f.write(power_output)
-                f.write("\n")
-            f.close()
+        elif 'simSeconds' in line:
+            match = re.search(r'\d+.\d+', line)
+            if not match:
+                print("Error grepping gem5 output")
+                exit(1)
+            simseconds = match.group(0)
+            print("Simulation time:")
+            print("    "+simseconds+"s")
+    if not cpi or not simseconds:
+        print("Error grepping gem5 output")
+        exit(1)
+    with open(name+"/results", "w") as f:
+        f.write("Simulation time\n")
+        f.write("    "+simseconds+"s\n")
+        f.write("Cycles per instruction:\n")
+        f.write("    "+cpi+"\n")
+        f.write("Core power usage:\n")
+        f.write(power_output)
+        f.write("\n")
+    f.close()
+
 
 print("Core power usage:")
 print(power_output)
-print("Results have been written to: results."+name)
+print("Results have been written to: "+name+"/results")
