@@ -11,5 +11,5 @@ for i, size in enumerate(sizes):
     else: 
         int_phys_regs = size
 
-    #run in paralell
+    #.Popen immediately returns, so we can run in parallel. only .run allows for capturing stdout for parsing, but doesn't return until the process completes.
     subprocess.Popen("python simulate.py --rob-size "+str(size)+" --num-int-phys-regs "+str(int_phys_regs)+" --num-float-phys-regs "+str(size)+" --num-vec-phys-regs "+str(size)+" --lsq-size "+str(size)+" --name "+name, shell=True) 
