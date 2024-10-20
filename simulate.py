@@ -164,7 +164,7 @@ if args.l2_size:
     configs.append("--l2_size="+str(args.l2_size)+"MB ")
 else: configs.append("--l2_size=4MB ")
 
-subprocess.run("mkdir "+name, shell=True)
+os.makedirs(name, exist_ok=True)
 
 gem5_outdir = name+"/gem5.out"
 gem5_run = gem5+"build/X86/gem5.fast --outdir="+gem5_outdir+" "+gem5+"configs/deprecated/example/se.py --cpu-type=DerivO3CPU --caches --l2cache -c "+benchmark+" --options=\""+benchmark_args+"\" "
