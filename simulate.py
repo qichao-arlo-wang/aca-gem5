@@ -111,7 +111,7 @@ if args.lsq_size:
     configs.append(prefix+"LQEntries="+str(args.lsq_size)+"\" ")
     configs.append(prefix+"SQEntries="+str(args.lsq_size)+"\" ")
 if args.lq_size: configs.append(prefix+"LQEntries="+str(args.lq_size)+"\" ")
-if args.sq_size: configs.append(prefix+"SQEntries="+str(args.sq_size)+"\" ")
+if args.sq_size is not None: configs.append(prefix+"SQEntries="+str(args.sq_size)+"\" ")
 if args.local_pred_size:
     if args.local_pred_size & (args.local_pred_size-1):
         print("Branch predictor sizes must be powers of 2!")
@@ -198,17 +198,15 @@ with open(name+"/gem5.out/stats.txt", "r") as gem5_output:
     if not cpi or not simseconds:
         print("Error grepping gem5 output")
         exit(1)
-    print("Simulated seconds, CPI:")
-    print("    "+simseconds+","+cpi)
+    print("    Simulated seconds = "+simseconds)
+    print("    CPI = "+cpi)
     with open(name+"/results", "w") as f:
-        f.write("Simulation seconds, CPI:\n")
-        f.write("    "+simseconds+","+cpi+"\n")
-        f.write("Core area and power usage:\n")
+        f.write("    Simulated seconds = "+simseconds+"\n")
+        f.write("    CPI = "+cpi+"\n")
         f.write(power_output)
         f.write("\n")
     f.close()
 
-
-print("Core area and power usage:")
 print(power_output)
+print()
 print("Results have been written to: "+name+"/results")
