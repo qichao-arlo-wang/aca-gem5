@@ -189,30 +189,26 @@ with open(name+"/gem5.out/stats.txt", "r") as gem5_output:
                 print("Error grepping gem5 output")
                 exit(1)
             cpi = match.group(0)
-            print("Cycles per instruction:")
-            print("    "+cpi)
         elif 'simSeconds' in line:
             match = re.search(r'\d+.\d+', line)
             if not match:
                 print("Error grepping gem5 output")
                 exit(1)
             simseconds = match.group(0)
-            print("Simulation time (seconds):")
-            print("    "+simseconds)
     if not cpi or not simseconds:
         print("Error grepping gem5 output")
         exit(1)
+    print("Simulated seconds, CPI:")
+    print("    "+simseconds+","+cpi)
     with open(name+"/results", "w") as f:
-        f.write("Simulation time (seconds)\n")
-        f.write("    "+simseconds+"\n")
-        f.write("Cycles per instruction:\n")
-        f.write("    "+cpi+"\n")
-        f.write("Core power usage:\n")
+        f.write("Simulation seconds, CPI:\n")
+        f.write("    "+simseconds+","+cpi+"\n")
+        f.write("Core area and power usage:\n")
         f.write(power_output)
         f.write("\n")
     f.close()
 
 
-print("Core power usage:")
+print("Core area and power usage:")
 print(power_output)
 print("Results have been written to: "+name+"/results")
