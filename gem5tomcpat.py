@@ -105,6 +105,7 @@ def readStatsFile(statsFile):
         # ignore empty lines and lines starting with "---"
         if not ignores.match(line):
             count += 1
+            print(line)
             statKind = statLine.match(line).group(1)
             statValue = statLine.match(line).group(2)
             if statValue == 'nan':
