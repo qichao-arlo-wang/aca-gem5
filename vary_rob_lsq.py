@@ -17,4 +17,4 @@ for i, rob_size in enumerate(sizes):
         #load balancer if running jobs in parallel. runs will crash if cpu usage gets too high.
         #while psutil.cpu_percent() > 70: time.sleep(30)
         #.run won't return until the program finishes. using .Popen returns immediately, meaning all runs execute in parallel (be mindful of your machine's resources though!). however, it has fewer features like capturing program output.
-        subprocess.Popen("python /homes/lp721/aca-gem5/simulate.py --rob-size "+str(rob_size)+" --num-int-phys-regs "+str(int_phys_regs)+" --num-float-phys-regs "+str(rob_size)+" --num-vec-phys-regs "+str(rob_size)+" --lsq-size "+str(lsq_size)+" --name "+name, shell=True)
+        subprocess.run("python /homes/lp721/aca-gem5/simulate.py --rob-size "+str(rob_size)+" --num-int-phys-regs "+str(int_phys_regs)+" --num-float-phys-regs "+str(rob_size)+" --num-vec-phys-regs "+str(rob_size)+" --lsq-size "+str(lsq_size)+" --name "+name, shell=True)
