@@ -63,6 +63,9 @@ if args.window_size:
         if component == components[0] and int(size) < 16:
             print("Mininum ROB size must be at least 16!")
             exit(1)
+        elif int(size) <= 0:
+            print("Instruction window sizes must be non-zero!")
+            exit(1)
         configs.append(prefix+component+"="+size+"\" ")
     configs.append(prefix+"SQEntries"+"="+values[-1]+"\" ")
     num_regs = values[0] if int(values[0]) >= 49 else 49
@@ -83,7 +86,7 @@ if args.branch_pred_size:
         print("Local predictor size, global predictor size, branch target buffer size, return address stack size")
         exit(1)
     for component, size in zip(components,values):
-        if int(size) & (int(size)-1) or size <= 0:
+        if int(size) & (int(size)-1) or int(size) <= 0:
             print("Branch predictor sizes must be powers of 2 and non-zero!")
             exit(1)
         if component == components[-1] and int(values[-1]) < 16:
