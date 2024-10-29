@@ -13,6 +13,7 @@ benchmark_args = "/homes/lp721/aca-gem5/benchmarks/micro-lisp/examples/"
 parser = argparse.ArgumentParser(description="Script to run Gem5 ACA Simulations. This script will create several output files in whatever directory you run it, so you may want to create a new directory to keep things clean! Contact lp721@ic.ac.uk with any problems.")
 
 parser.add_argument('--name', type=str, help="Name used for results file. If unspecified, process ID of the script is used.")
+parser.add_argument('--gen-trace', action='store_true', help="Generate an instruction trace for Konata (warning: can use up disk space fast!)")
 parser.add_argument('--pipeline-width', type=int, help="Number of instructions in each stage of the pipeline at a time. Default = 8.")
 parser.add_argument('--rob-size', type=int, help="Number of reorder buffer entries. Default = 512.")
 parser.add_argument('--num-int-phys-regs', type=int, help="Number of integer physical registers. Default = 512.")
@@ -193,10 +194,12 @@ if args.l2_size is not None:
     configs.append("--l2_size="+str(args.l2_size)+"MB ")
 else: configs.append("--l2_size=8MB ")
 
+if args.gen_trace: name = "/vol/bitbucket/lp721/"+name
 os.makedirs(name, exist_ok=True)
 
 gem5_outdir = name+"/gem5.out"
-gem5_run = gem5+"build/X86/gem5.fast --outdir="+gem5_outdir+" "+gem5+"configs/deprecated/example/se.py --cpu-type=DerivO3CPU --caches --l2cache -c "+benchmark+" --options=\""+benchmark_args+"\" "
+gem5_bin = "build/X86/gem5.opt --debug-flags=O3PipeView --debug-file=trace.out" if args.gen_trace else "build/X86/gem5.fast"
+gem5_run = gem5+gem5_bin+" --outdir="+gem5_outdir+" "+gem5+"configs/deprecated/example/se.py --cpu-type=DerivO3CPU --caches --l2cache -c "+benchmark+" --options=\""+benchmark_args+"\" "
 gem5_run += ' '.join(configs)
 subprocess.run(gem5_run, shell=True, check=True)
 
