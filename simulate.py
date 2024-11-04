@@ -44,6 +44,9 @@ if args.pipeline_width is not None:
     if not args.pipeline_width:
         print("Pipeline width cannot be 0!")
         exit(1)
+    if args.pipeline_width < 4:
+        print("Pipeline width must be at least 4!")
+        exit(1)
     stages = ["fetch", "decode", "rename", "dispatch", "issue", "wb", "squash", "commit"]
     for stage in stages:
         configs.append(prefix+stage+"Width="+str(args.pipeline_width)+"\" ")
