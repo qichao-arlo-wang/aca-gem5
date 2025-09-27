@@ -105,5 +105,5 @@ class L1Cache(L0Cache_Controller):
         # In stdlib terms, they are bufferToL2 and bufferFromL2 respectively.
         # These buffers are connections between L1 cache and L2 cache.
         # Later on, we'll need to connect those buffers to L2.
-        self.bufferToL1 = MessageBuffer(ordered=True)
-        self.bufferFromL1 = MessageBuffer(ordered=True)
+        self.bufferToL1 = MessageBuffer()
+        self.bufferFromL1 = MessageBuffer()

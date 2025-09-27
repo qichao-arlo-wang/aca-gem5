@@ -342,6 +342,9 @@ class Request : public Extensible<Request>
     using LocalAccessor =
         std::function<Cycles(ThreadContext *tc, Packet *pkt)>;
 
+    /* Flag set when a packet passes through Ruby */
+    bool handledByRuby = false;
+
   private:
     typedef uint16_t PrivateFlagsType;
     typedef gem5::Flags<PrivateFlagsType> PrivateFlags;
@@ -587,6 +590,7 @@ class Request : public Extensible<Request>
         translateDelta = 0;
         atomicOpFunctor = std::move(amo_op);
         _localAccessor = nullptr;
+        handledByRuby = false;
     }
 
     /**
@@ -1035,6 +1039,7 @@ class Request : public Extensible<Request>
     bool isKernel() const { return _flags.isSet(KERNEL); }
     bool isAtomicReturn() const { return _flags.isSet(ATOMIC_RETURN_OP); }
     bool isAtomicNoReturn() const { return _flags.isSet(ATOMIC_NO_RETURN_OP); }
+    bool wasHandledByRuby() const { return handledByRuby; };
     // hardware transactional memory
     bool isHTMStart() const { return _flags.isSet(HTM_START); }
     bool isHTMCommit() const { return _flags.isSet(HTM_COMMIT); }

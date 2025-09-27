@@ -165,8 +165,6 @@ IEW::IEWStats::IEWStats(CPU *cpu)
              "Number of times the IQ has become full, causing a stall"),
     ADD_STAT(lsqFullEvents, statistics::units::Count::get(),
              "Number of times the LSQ has become full, causing a stall"),
-    ADD_STAT(memOrderViolationEvents, statistics::units::Count::get(),
-             "Number of memory order violations"),
     ADD_STAT(predictedTakenIncorrect, statistics::units::Count::get(),
              "Number of branches that were predicted taken incorrectly"),
     ADD_STAT(predictedNotTakenIncorrect, statistics::units::Count::get(),
@@ -409,6 +407,12 @@ IEW::squash(ThreadID tid)
     }
 
     emptyRenameInsts(tid);
+
+    //revert branch history
+    BranchHistory &decodedBranchHistory = cpu->getDecode()->getBranchHistory();
+    while (!decodedBranchHistory.empty() && decodedBranchHistory.front().seqNum > fromCommit->commitInfo[tid].doneSeqNum) {
+        decodedBranchHistory.pop_front();
+    }
 }
 
 void
@@ -431,6 +435,12 @@ IEW::squashDueToBranch(const DynInstPtr& inst, ThreadID tid)
         toCommit->includeSquashInst[tid] = false;
 
         wroteToTimeBuffer = true;
+    }
+
+    //revert branch history
+    BranchHistory decodedBranchHistory = cpu->getDecode()->getBranchHistory();
+    while (!decodedBranchHistory.empty() && decodedBranchHistory.front().seqNum >= inst->seqNum) {
+        decodedBranchHistory.pop_front();
     }
 
 }
@@ -458,6 +468,12 @@ IEW::squashDueToMemOrder(const DynInstPtr& inst, ThreadID tid)
         toCommit->includeSquashInst[tid] = true;
 
         wroteToTimeBuffer = true;
+    }
+
+    //revert branch history
+    BranchHistory decodedBranchHistory = cpu->getDecode()->getBranchHistory();
+    while (!decodedBranchHistory.empty() && decodedBranchHistory.front().seqNum >= inst->seqNum) {
+        decodedBranchHistory.pop_front();
     }
 }
 
@@ -1290,16 +1306,11 @@ IEW::executeInsts()
                         "[sn:%lli], inst PC: %s [sn:%lli]. Addr is: %#x.\n",
                         violator->pcState(), violator->seqNum,
                         inst->pcState(), inst->seqNum, inst->physEffAddr);
-
+                
                 fetchRedirect[tid] = true;
-
-                // Tell the instruction queue that a violation has occured.
-                instQueue.violation(inst, violator);
 
                 // Squash.
                 squashDueToMemOrder(violator, tid);
-
-                ++iewStats.memOrderViolationEvents;
             }
         } else {
             // Reset any state associated with redirects that will not
@@ -1315,8 +1326,6 @@ IEW::executeInsts()
                         inst->physEffAddr);
                 DPRINTF(IEW, "Violation will not be handled because "
                         "already squashing\n");
-
-                ++iewStats.memOrderViolationEvents;
             }
         }
     }
@@ -1401,6 +1410,9 @@ IEW::tick()
     ldstQueue.tick();
 
     sortInsts();
+
+    // Evaluate function units.
+    fuPool->evaluateUnits();
 
     // Free function units marked as being freed this cycle.
     fuPool->processFreeUnits();

@@ -1,3 +1,4 @@
+# Copyright (c) 2024 Eduardo José Gómez Hernández (University of Murcia)
 # Copyright (c) 2022-2023 The University of Edinburgh
 # All rights reserved.
 #
@@ -38,6 +39,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from m5.objects.ClockedObject import ClockedObject
+from m5.objects.IndexingPolicies import *
+from m5.objects.ReplacementPolicies import *
 from m5.params import *
 from m5.proxy import *
 from m5.SimObject import *
@@ -88,12 +91,32 @@ class SimpleBTB(BranchTargetBuffer):
     cxx_class = "gem5::branch_prediction::SimpleBTB"
     cxx_header = "cpu/pred/simple_btb.hh"
 
-    numEntries = Param.Unsigned(1024, "Number of BTB entries")
+    numEntries = Param.Unsigned(4096, "Number of BTB entries")
     tagBits = Param.Unsigned(16, "Size of the BTB tags, in bits")
     instShiftAmt = Param.Unsigned(
         Parent.instShiftAmt, "Number of bits to shift instructions by"
     )
 
+class AssociativeBTB(BranchTargetBuffer):
+    type = "AssociativeBTB"
+    cxx_class = "gem5::branch_prediction::AssociativeBTB"
+    cxx_header = "cpu/pred/associative_btb.hh"
+    
+    numEntries = Param.Unsigned(4096, "Number of entries of BTB entries")
+    assoc = Param.Unsigned(8, "Associativity of the BTB")
+    replacement_policy = Param.BaseReplacementPolicy(
+        LRURP(), "Replacement policy of the table"
+    )
+    
+    tagBits = Param.Unsigned(16, "Size of the BTB tags, in bits")
+    useTagCompression = Param.Bool(
+        False,
+        "Use a tag compression function as"
+        "described in https://ieeexplore.ieee.org/document/9528930",
+    )
+    instShiftAmt = Param.Unsigned(
+        Parent.instShiftAmt, "Number of bits to shift instructions by"
+    )
 
 class IndirectPredictor(SimObject):
     type = "IndirectPredictor"
@@ -127,6 +150,23 @@ class SimpleIndirectPredictor(IndirectPredictor):
     indirectGHRBits = Param.Unsigned(13, "Indirect GHR number of bits")
     instShiftAmt = Param.Unsigned(2, "Number of bits to shift instructions by")
 
+class ITTAGE(IndirectPredictor):
+    type = 'ITTAGE'
+    cxx_class = 'gem5::branch_prediction::ITTAGE'
+    cxx_header = "cpu/pred/ittage.hh"
+
+    indirectPathLength = Param.Unsigned(3, "Previous indirect targets to use for path history")
+    numPredictors = Param.Unsigned(11, "Number of TAGE predictors")
+    tableSizes = VectorParam.Int(
+        [256] * 15, "the ITTAGE T1~Tn length")
+    TTagBitSizes = VectorParam.Int(
+        [9, 9, 13, 13, 13, 13, 13, 13, 13, 13, 15, 15, 15, 15, 15], "the T1~Tn entry's tag bit size")
+    TTagPcShifts = VectorParam.Int(
+        [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], "when the T1~Tn entry's tag generating, PC right shift")
+    histLengths = VectorParam.Int(
+        [4, 10, 16, 27, 44, 60, 96, 109, 219, 449, 487], "the ITTAGE T1~Tn history length")
+    simpleBTBSize = Param.Unsigned(512, "size of base predictor")
+   
 
 class BranchPredictor(SimObject):
     type = "BranchPredictor"
@@ -171,10 +211,10 @@ class TournamentBP(BranchPredictor):
     cxx_class = "gem5::branch_prediction::TournamentBP"
     cxx_header = "cpu/pred/tournament.hh"
 
-    localPredictorSize = Param.Unsigned(1024, "Size of local predictor")
+    localPredictorSize = Param.Unsigned(2048, "Size of local predictor")
     localCtrBits = Param.Unsigned(2, "Bits per counter")
-    localHistoryTableSize = Param.Unsigned(1024, "size of local history table")
-    globalPredictorSize = Param.Unsigned(2048, "Size of global predictor")
+    localHistoryTableSize = Param.Unsigned(2048, "size of local history table")
+    globalPredictorSize = Param.Unsigned(8192, "Size of global predictor")
     globalCtrBits = Param.Unsigned(2, "Bits per counter")
     choicePredictorSize = Param.Unsigned(8192, "Size of choice predictor")
     choiceCtrBits = Param.Unsigned(2, "Bits of choice counters")
@@ -253,6 +293,11 @@ class TAGE(BranchPredictor):
     cxx_header = "cpu/pred/tage.hh"
 
     tage = Param.TAGEBase(TAGEBase(), "Tage object")
+
+class TAGE_EMILIO(BranchPredictor):
+    type = "TAGE_EMILIO"
+    cxx_class = "gem5::branch_prediction::TAGE_EMILIO"
+    cxx_header = "cpu/pred/tage_sc_l_emilio.hh"
 
 
 class LTAGE_TAGE(TAGEBase):

@@ -261,10 +261,6 @@ SyscallReturn dupFunc(SyscallDesc *desc, ThreadContext *tc,
 SyscallReturn dup2Func(SyscallDesc *desc, ThreadContext *tc,
                        int old_tgt_fd, int new_tgt_fd);
 
-/// Target dup3() handler.
-SyscallReturn dup3Func(SyscallDesc *desc, ThreadContext *tc,
-                       int old_tgt_fd, int new_tgt_fd, int flags);
-
 /// Target fcntl() handler.
 SyscallReturn fcntlFunc(SyscallDesc *desc, ThreadContext *tc,
                         int tgt_fd, int cmd, guest_abi::VarArgs<int> varargs);

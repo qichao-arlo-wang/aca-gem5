@@ -644,36 +644,6 @@ dup2Func(SyscallDesc *desc, ThreadContext *tc, int old_tgt_fd, int new_tgt_fd)
 }
 
 SyscallReturn
-dup3Func(SyscallDesc *desc, ThreadContext *tc, int old_tgt_fd, int new_tgt_fd, int flags)
-{
-	if (old_tgt_fd == new_tgt_fd) 
-		return -EINVAL;
-    auto p = tc->getProcessPtr();
-    auto old_hbp = std::dynamic_pointer_cast<HBFDEntry>((*p->fds)[old_tgt_fd]);
-    if (!old_hbp)
-        return -EBADF;
-    int old_sim_fd = old_hbp->getSimFD();
-
-    /**
-     * We need a valid host file descriptor number to be able to pass into
-     * the second parameter for dup2 (newfd), but we don't know what the
-     * viable numbers are; we execute the open call to retrieve one.
-     */
-    int res_fd = dup3(old_sim_fd, open("/dev/null", O_RDONLY), flags);
-    if (res_fd == -1)
-        return -errno;
-
-    auto new_hbp = std::dynamic_pointer_cast<HBFDEntry>((*p->fds)[new_tgt_fd]);
-    if (new_hbp)
-        p->fds->closeFDEntry(new_tgt_fd);
-    new_hbp = std::dynamic_pointer_cast<HBFDEntry>(old_hbp->clone());
-    new_hbp->setSimFD(res_fd);
-    new_hbp->setCOE(false);
-
-    return p->fds->allocFD(new_hbp);
-}
-
-SyscallReturn
 fcntlFunc(SyscallDesc *desc, ThreadContext *tc,
           int tgt_fd, int cmd, guest_abi::VarArgs<int> varargs)
 {

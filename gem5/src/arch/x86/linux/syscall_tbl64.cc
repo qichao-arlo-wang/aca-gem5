@@ -339,7 +339,7 @@ SyscallDescTable<EmuLinux::SyscallABI64> EmuLinux::syscallDescs64 = {
     { 289, "signalfd4" },
     { 290, "eventfd2", eventfdFunc<X86Linux64> },
     { 291, "epoll_create1" },
-    { 292, "dup3", dup3Func },
+    { 292, "dup3" },
     { 293, "pipe2", pipe2Func },
     { 294, "inotify_init1" },
     { 295, "preadv" },
