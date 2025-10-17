@@ -192,12 +192,8 @@ class BaseO3CPU(BaseCPU):
     smtROBThreshold = Param.Int(100, "SMT ROB Threshold Sharing Parameter")
     smtCommitPolicy = Param.CommitPolicy("RoundRobin", "SMT Commit Policy")
 
-    #branchPred = Param.BranchPredictor(
-    #    TAGE(numThreads=Parent.numThreads, tage=LTAGE_TAGE(), indirectBranchPred=ITTAGE()), "Branch Predictor"
-    #)
-
     branchPred = Param.BranchPredictor(
-        TAGE_EMILIO(numThreads=Parent.numThreads, indirectBranchPred=ITTAGE(), BTB=AssociativeBTB()), "Branch Predictor"
+        TournamentBP(numThreads=Parent.numThreads, BTB=AssociativeBTB()), "Branch Predictor"
     )
 
     needsTSO = Param.Bool(False, "Enable TSO Memory model")

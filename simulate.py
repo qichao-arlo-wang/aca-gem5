@@ -7,8 +7,8 @@ pid = str(os.getpid())
 gem5 = "/homes/lp721/aca-gem5/gem5/"
 mcpat = "/homes/lp721/aca-gem5/mcpat/"
 gem5tomcpat = "/homes/lp721/aca-gem5/gem5tomcpat.py"
-benchmark = "/homes/lp721/aca-gem5/benchmarks/micro-lisp/mlisp89"
-benchmark_args = "/homes/lp721/aca-gem5/benchmarks/micro-lisp/examples/"
+benchmark = "/homes/lp721/gapbs/tc"
+benchmark_args = "-u 10 -n 1 -k 16"
 
 parser = argparse.ArgumentParser(description="Script to run Gem5 ACA Simulations. This script will create several output files in whatever directory you run it, so you may want to create a new directory to keep things clean! Contact lp721@ic.ac.uk with any problems.")
 
