@@ -1,13 +1,16 @@
+#!/usr/bin/env python3
 import argparse
 import os
 import subprocess
 import re
 
 pid = str(os.getpid())
-gem5 = "/homes/lp721/aca-gem5/gem5/"
-mcpat = "/homes/lp721/aca-gem5/mcpat/"
-gem5tomcpat = "/homes/lp721/aca-gem5/gem5tomcpat.py"
-benchmark = "/homes/lp721/gapbs/tc"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+gem5 = os.path.join(BASE_DIR, "gem5/")
+mcpat = os.path.join(BASE_DIR, "mcpat/")
+gem5tomcpat = os.path.join(BASE_DIR, "gem5tomcpat.py")
+benchmark = os.path.join(BASE_DIR, "../gapbs/tc")
 benchmark_args = "-u 10 -n 1 -k 16"
 
 parser = argparse.ArgumentParser(description="Script to run Gem5 ACA Simulations. This script will create several output files in whatever directory you run it, so you may want to create a new directory to keep things clean! Contact lp721@ic.ac.uk with any problems.")
@@ -206,7 +209,7 @@ gem5_run = gem5+gem5_bin+" --outdir="+gem5_outdir+" "+gem5+"configs/deprecated/e
 gem5_run += ' '.join(configs)
 subprocess.run(gem5_run, shell=True, check=True)
 
-gem5tomcpat_run = "python "+gem5tomcpat+" --config "+gem5_outdir+"/config.json --stats "+gem5_outdir+"/stats.txt --template "+mcpat+"/ProcessorDescriptionFiles/template_x86.xml --output "+name+"/mcpat-in.xml"
+gem5tomcpat_run = f"python3 {gem5tomcpat} --config {gem5_outdir}/config.json --stats {gem5_outdir}/stats.txt --template {mcpat}/ProcessorDescriptionFiles/template_x86.xml --output {name}/mcpat-in.xml"
 subprocess.run(gem5tomcpat_run, shell=True, check=True, capture_output=True)
 
 mcpat_run = mcpat+"mcpat -infile "+name+"/mcpat-in.xml -print_level 1 -opt_for_clk 1"
