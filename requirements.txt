@@ -1,0 +1,5 @@
+scons==4.6.0
+protobuf>=4.25.0,<5.0.0
+numpy
+matplotlib
+pandas

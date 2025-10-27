@@ -10,7 +10,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 gem5 = os.path.join(BASE_DIR, "gem5/")
 mcpat = os.path.join(BASE_DIR, "mcpat/")
 gem5tomcpat = os.path.join(BASE_DIR, "gem5tomcpat.py")
-benchmark = os.path.join(BASE_DIR, "../gapbs/tc")
+benchmark = os.path.join(BASE_DIR, "benchmarks/gapbs/tc")
 benchmark_args = "-u 10 -n 1 -k 16"
 
 parser = argparse.ArgumentParser(description="Script to run Gem5 ACA Simulations. This script will create several output files in whatever directory you run it, so you may want to create a new directory to keep things clean! Contact lp721@ic.ac.uk with any problems.")
