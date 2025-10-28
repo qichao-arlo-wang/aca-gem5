@@ -1,6 +1,7 @@
 scons==4.6.0
-protobuf>=4.25.0,<5.0.0
-numpy
-matplotlib
-pandas
-psutil
+protobuf==4.25.8
+numpy==2.3.4
+matplotlib==3.10.7
+psutil==7.1.2
+pandas==2.3.3
+openpyxl==3.1.5

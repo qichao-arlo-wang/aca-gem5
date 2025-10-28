@@ -3,30 +3,35 @@ import subprocess
 import psutil
 import time
 import os
-import csv
 import re
+import pandas as pd
+from pathlib import Path
 
 # -------------------------------
 # Configurations
 # -------------------------------
 sizes = [2**i for i in range(4, 10)]  # 16, 32, 64, 128, 256, 512
 mininum_phys_reg_size = 49
-max_parallel_jobs = 14
-output_csv = "vary_rob_lsq_results.csv"
+max_parallel_jobs = 24
+
+base_results_dir = Path("results")
+base_results_dir.mkdir(exist_ok=True)
+
+output_excel = base_results_dir / "vary_rob_lsq_results.xlsx"
 
 running = []  # list of (process, name)
 results = []  # collected results
 
 
-def parse_results(name):
+def parse_results(folder_name):
     """Parse results file for CPI, simSeconds, and power info."""
-    result_file = os.path.join(name, "results")
-    if not os.path.exists(result_file):
-        print(f"⚠️ Warning: results file not found for {name}")
+    result_file = base_results_dir / folder_name / "results"
+    if not result_file.exists():
+        print(f"⚠️ Warning: results file not found for {folder_name}")
         return None
 
     data = {
-        "name": name,
+        "name": folder_name,
         "rob": None,
         "lsq": None,
         "SimulatedSeconds": None,
@@ -39,7 +44,7 @@ def parse_results(name):
     }
 
     # extract rob and lsq from folder name
-    match = re.match(r"rob_(\d+)_lsq_(\d+)", name)
+    match = re.match(r"rob_(\d+)_lsq_(\d+)", folder_name)
     if match:
         data["rob"], data["lsq"] = match.groups()
 
@@ -49,52 +54,45 @@ def parse_results(name):
             if "Simulated seconds" in line:
                 m = re.search(r"[\d.]+", line)
                 if m:
-                    data["SimulatedSeconds"] = m.group()
+                    data["SimulatedSeconds"] = float(m.group())
             elif "CPI" in line:
                 m = re.search(r"[\d.]+", line)
                 if m:
-                    data["CPI"] = m.group()
+                    data["CPI"] = float(m.group())
             elif "Area" in line:
                 m = re.search(r"[\d.]+", line)
                 if m:
-                    data["Area_mm2"] = m.group()
+                    data["Area_mm2"] = float(m.group())
             elif "Peak Dynamic" in line:
                 m = re.search(r"[\d.]+", line)
                 if m:
-                    data["PeakDynamic_W"] = m.group()
+                    data["PeakDynamic_W"] = float(m.group())
             elif "Subthreshold Leakage" in line:
                 m = re.search(r"[\d.]+", line)
                 if m:
-                    data["SubthresholdLeakage_W"] = m.group()
+                    data["SubthresholdLeakage_W"] = float(m.group())
             elif "Gate Leakage" in line:
                 m = re.search(r"[\d.]+", line)
                 if m:
-                    data["GateLeakage_W"] = m.group()
+                    data["GateLeakage_W"] = float(m.group())
             elif "Runtime Dynamic" in line:
                 m = re.search(r"[\d.]+", line)
                 if m:
-                    data["RuntimeDynamic_W"] = m.group()
+                    data["RuntimeDynamic_W"] = float(m.group())
 
     return data
 
 
-def write_csv(data_list, path):
-    """Write results to CSV."""
+def write_excel(data_list, path):
+    """Write results to Excel (.xlsx)."""
     if not data_list:
         print("⚠️ No results to write.")
         return
 
-    keys = [
-        "name", "rob", "lsq", "SimulatedSeconds", "CPI",
-        "Area_mm2", "PeakDynamic_W", "SubthresholdLeakage_W",
-        "GateLeakage_W", "RuntimeDynamic_W"
-    ]
-
-    with open(path, "w", newline="") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=keys)
-        writer.writeheader()
-        writer.writerows(data_list)
-    print(f"✅ Results saved to {path}")
+    df = pd.DataFrame(data_list)
+    df_sorted = df.sort_values(by=["rob", "lsq"], key=pd.to_numeric, ascending=True)
+    df_sorted.to_excel(path, index=False)
+    print(f"✅ Results saved to Excel: {path}")
 
 
 # -------------------------------
@@ -103,6 +101,9 @@ def write_csv(data_list, path):
 for rob_size in sizes:
     for lsq_size in sizes:
         name = f"rob_{rob_size}_lsq_{lsq_size}"
+        sim_dir = base_results_dir / name
+        sim_dir.mkdir(exist_ok=True)
+
         phys_regs = max(rob_size, mininum_phys_reg_size)
 
         cmd = [
@@ -112,7 +113,7 @@ for rob_size in sizes:
             "--num-float-phys-regs", str(phys_regs),
             "--num-vec-phys-regs", str(phys_regs),
             "--lsq-size", str(lsq_size),
-            "--name", name
+            "--name", str(sim_dir)
         ]
 
         # control CPU load & concurrency
@@ -143,7 +144,7 @@ for p, n in running:
         results.append(res)
 
 # -------------------------------
-# Save final CSV
+# Save final Excel
 # -------------------------------
-write_csv(results, output_csv)
+write_excel(results, output_excel)
 print("🎯 All simulations completed successfully.")
